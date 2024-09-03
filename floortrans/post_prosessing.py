@@ -1,14 +1,14 @@
+import copy
+from collections.abc import Iterable
+from itertools import combinations
+
+import numpy as np
 import torch
 import torch.nn.functional as F
-import numpy as np
-import copy
-from itertools import combinations
 from scipy import stats
-from skimage import draw
-from scipy.ndimage import measurements
 from shapely.geometry import Polygon
 from shapely.ops import unary_union
-from collections.abc import Iterable
+from skimage import draw
 
 
 def get_wall_polygon(wall_heatmaps, room_segmentation, threshold, wall_classes, point_orientations, orientation_ranges):
@@ -41,7 +41,7 @@ def polygon_intersection(x_min, x_max, y_min, y_max, x_min_label, x_max_label, y
         x_maxx = min(x_max, x_max_label)
         y_minn = max(y_min, y_min_label)
         y_maxx = min(y_max, y_max_label)
-        area = np.sqrt((x_maxx-x_minn)**2+(y_maxx-y_minn)**2)
+        area = np.sqrt((x_maxx - x_minn)**2 + (y_maxx - y_minn)**2)
 
         return area
     else:
@@ -56,8 +56,8 @@ def remove_overlapping_walls(walls, types, wall_lines):
         y_max_wall1 = max(wall1[:, 1])
         x_min_wall1 = min(wall1[:, 0])
         x_max_wall1 = max(wall1[:, 0])
-        label_area = np.sqrt((x_max_wall1-x_min_wall1)**2+(y_max_wall1-y_min_wall1)**2)
-        for j in range(i+1, len(walls)):
+        label_area = np.sqrt((x_max_wall1 - x_min_wall1)**2 + (y_max_wall1 - y_min_wall1)**2)
+        for j in range(i + 1, len(walls)):
             wall2 = walls[j]
             wall1_dim = calc_polygon_dim(wall1)
             wall2_dim = calc_polygon_dim(wall2)
@@ -67,7 +67,7 @@ def remove_overlapping_walls(walls, types, wall_lines):
                 x_min_wall2 = min(wall2[:, 0])
                 x_max_wall2 = max(wall2[:, 0])
                 intersection = polygon_intersection(x_min_wall1, x_max_wall1, y_min_wall1, y_max_wall1, x_min_wall2, x_max_wall2, y_min_wall2, y_max_wall2)
-                pred_area = np.sqrt((x_max_wall2-x_min_wall2)**2+(y_max_wall2-y_min_wall2)**2)
+                pred_area = np.sqrt((x_max_wall2 - x_min_wall2)**2 + (y_max_wall2 - y_min_wall2)**2)
                 union = pred_area + label_area - intersection
 
                 iou = intersection / union
@@ -132,7 +132,7 @@ def range_overlap(a_min, a_max, b_min, b_max):
 def rectangle_size(r):
     x = max(r[:, 0]) - min(r[:, 0])
     y = max(r[:, 1]) - min(r[:, 1])
-    return x*y
+    return x * y
 
 
 def fix_wall_corners(walls, wall_points, wall_lines):
@@ -264,8 +264,8 @@ def get_rectangle_polygons(junction_points, size):
     y = np.sort(np.concatenate(([0, max_y], np.unique(junction_points[:, 1]))))
 
     # number of rectangle polygons
-    polygon_count_x = (len(x)-1)
-    polygon_count_y = (len(y)-1)
+    polygon_count_x = (len(x) - 1)
+    polygon_count_y = (len(y) - 1)
     num_pol = polygon_count_x * polygon_count_y
 
     polygons = np.zeros((num_pol, 4, 2))
@@ -313,7 +313,7 @@ def merge_rectangles(rectangles, room_types):
         if r['class'] > num_classes:
             num_classes = r['class']
 
-    polygon_indexes = [[] for i in range(num_classes+1)]
+    polygon_indexes = [[] for i in range(num_classes + 1)]
 
     for i, t in enumerate(room_types):
         polygon_indexes[t['class']].append(i)
@@ -377,7 +377,7 @@ def get_polygons(predictions, threshold, all_opening_types):
 
     c, h, w = room_seg.shape
     for i in range(c):
-        if i in [2, 8]: # we ignore walls (2) and railings (8)
+        if i in [2, 8]:  # we ignore walls (2) and railings (8)
             room_seg[i] = np.zeros((h, w))
   
     room_seg_2D = np.argmax(room_seg, axis=0)
@@ -436,7 +436,7 @@ def get_opening_polygon(heatmaps, wall_polygons, icons_seg, wall_points, wall_li
     door_points = []
     for index, i in enumerate([2, 1, 3, 0]):
         info = [0, index]
-        heatmap = heatmaps[i+13]
+        heatmap = heatmaps[i + 13]
         heatmap *= wall_mask
         p = extract_local_max(heatmap, max_num_points, info, threshold)
         door_points += p
@@ -548,10 +548,10 @@ def get_opening_types(opening_polygons, icons_seg, all_opening_classes):
         x_1 = min(pol[:, 0])
         x_2 = max(pol[:, 0])
         
-        opening_evidence_sums = icons_seg[all_opening_classes, y_1:y_2+1, x_1:x_2+1].sum(axis=(1, 2))
+        opening_evidence_sums = icons_seg[all_opening_classes, y_1:y_2 + 1, x_1:x_2 + 1].sum(axis=(1, 2))
         opening_class = np.argmax(opening_evidence_sums)
         # if opening_class in all_opening_types:
-        opening_area = abs(y_2-y_1)*abs(x_2-x_1)
+        opening_area = abs(y_2 - y_1) * abs(x_2 - x_1)
         opening_types.append({'type': 'icon',
                               'class': all_opening_classes[opening_class],
                               'prob': np.max(opening_evidence_sums) / opening_area})
@@ -565,7 +565,7 @@ def get_icon_polygon(heatmaps, icons_seg, threshold, point_orientations, orienta
     # Layer order switch. Must be done to make calc_point_info work.
     for index, i in enumerate([3, 2, 0, 1]):
         info = [1, index]
-        point = extract_local_max(heatmaps[i+17], max_num_points, info, threshold,
+        point = extract_local_max(heatmaps[i + 17], max_num_points, info, threshold,
                                   close_point_suppression=True)
         icon_points += point
 
@@ -587,7 +587,7 @@ def get_icon_polygon(heatmaps, icons_seg, threshold, point_orientations, orienta
         y2 = int((point_3[1] + point_4[1]) / 2)
 
         icon_area = get_icon_area(icon, icon_points)
-        icon_evidence_sums = icons_seg[:, y1:y2+1, x1:x2+1].sum(axis=(1, 2))
+        icon_evidence_sums = icons_seg[:, y1:y2 + 1, x1:x2 + 1].sum(axis=(1, 2))
         icon_class = np.argmax(icon_evidence_sums)
         icon_polygon = np.array([[[x1, y1], [x2, y1], [x2, y2], [x1, y2]]])
         if icon_class != 0:
@@ -628,7 +628,7 @@ def points_to_manhantan(connected_walls, wall_points, line_dim):
         for i in walls:
             summ += wall_points[i][line_dim]
 
-        new_coord = int(np.round(float(summ)/len(walls)))
+        new_coord = int(np.round(float(summ) / len(walls)))
         for i in walls:
             new_wall_points[i][line_dim] = new_coord
 
@@ -664,11 +664,11 @@ def extract_opening_polygon(wall_polygons, door_points, door_lines, size):
                     p11 = pol[3]
                     p12 = pol[2]
                     p21 = point2[:2]
-                    p22 = [point2[0], height-1]
+                    p22 = [point2[0], height - 1]
                     down_right = get_intersect(p11, p12, p21, p22)
 
                     p21 = point1[:2]
-                    p22 = [point1[0], height-1]
+                    p22 = [point1[0], height - 1]
                     down_left = get_intersect(p11, p12, p21, p22)
                 else:
                     # vertical openings
@@ -734,11 +734,11 @@ def get_intersect(p11, p12, p21, p22):
     y3 = float(p21[1])
     x4 = float(p22[0])
     y4 = float(p22[1])
-    a = (x1*y2-y1*x2)
-    b = (x3*y4-y3*x4)
-    c = (x1-x2)*(y3-y4)-(y1-y2)*(x3-x4)
-    px = np.round((a * (x3-x4)-(x1-x2) * b) / c)
-    py = np.round((a * (y3-y4)-(y1-y2) * b) / c)
+    a = (x1 * y2 - y1 * x2)
+    b = (x3 * y4 - y3 * x4)
+    c = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4)
+    px = np.round((a * (x3 - x4) - (x1 - x2) * b) / c)
+    py = np.round((a * (y3 - y4) - (y1 - y2) * b) / c)
 
     return np.array([px, py], dtype=int)
 
@@ -877,7 +877,7 @@ def extract_wall_polygon(wall, wall_points, segmentation, seg_class):
             w_neg = 0
             j0, i0 = i[0], i[1]
             con = True
-            while con and i0 < max_width-1:
+            while con and i0 < max_width - 1:
                 i1 = i0 + 1
                 j1 = j0
                 pxl_class = get_pxl_class(int(np.floor(i1)), int(np.floor(j1)), segmentation)
@@ -933,7 +933,7 @@ def extract_wall_polygon(wall, wall_points, segmentation, seg_class):
             w_neg = 0
             j0, i0 = i[0], i[1]
             con = True
-            while con and j0 < max_height-1:
+            while con and j0 < max_height - 1:
                 i1 = i0
                 j1 = j0 + 1
                 pxl_class = get_pxl_class(int(np.floor(i1)), int(np.floor(j1)), segmentation)
@@ -969,10 +969,10 @@ def extract_wall_polygon(wall, wall_points, segmentation, seg_class):
         if w_delta == 0:
             return None
 
-        down_left = np.array([x1, y1+w_delta])
-        down_right = np.array([x2, y2+w_delta])
-        up_left = np.array([x1, y1-w_delta])
-        up_right = np.array([x2, y2-w_delta])
+        down_left = np.array([x1, y1 + w_delta])
+        down_right = np.array([x2, y2 + w_delta])
+        up_left = np.array([x1, y1 - w_delta])
+        up_right = np.array([x2, y2 - w_delta])
         polygon = np.array([up_left,
                             up_right,
                             down_right,
@@ -1001,7 +1001,7 @@ def get_wall_length(wall, wall_points):
     x2 = point2[0]
     y2 = point2[1]
 
-    return np.sqrt((x1-x2)**2+(y1-y2)**2)
+    return np.sqrt((x1 - x2)**2 + (y1 - y2)**2)
 
 
 def get_icon_area(icon, icon_points):
@@ -1265,7 +1265,7 @@ def find_conflict_line_pairs(points, lines, gap):
                 if abs(fixed_value_2 - fixed_value_1) > gap / 2 or min_value_1 > max_value_2 - gap or min_value_2 > max_value_1 - gap:
                     continue
                 conflict_line_pairs.append((line_index_1, line_index_2))
-                #draw_lines('test/lines_' + str(line_index_1) + "_" + str(line_index_2) + '.png', width, height, points, [line_1, line_2])
+                # draw_lines('test/lines_' + str(line_index_1) + "_" + str(line_index_2) + '.png', width, height, points, [line_1, line_2])
             else:
                 if min_value_1 > fixed_value_2 - gap or max_value_1 < fixed_value_2 + gap or min_value_2 > fixed_value_1 - gap or max_value_2 < fixed_value_1 + gap:
                     continue
@@ -1521,14 +1521,14 @@ def bresenham_line(x0, y0, x1, y1):
         dx, dy = dy, dx
         xx, xy, yx, yy = 0, ysign, xsign, 0
 
-    D = 2*dy - dx
+    D = 2 * dy - dx
     y = 0
     res = []
     for x in range(dx + 1):
-        res.append((y0 + x*xy + y*yy, x0 + x*xx + y*yx))
+        res.append((y0 + x * xy + y * yy, x0 + x * xx + y * yx))
         if D >= 0:
             y += 1
-            D -= 2*dx
-        D += 2*dy
+            D -= 2 * dx
+        D += 2 * dy
 
     return res

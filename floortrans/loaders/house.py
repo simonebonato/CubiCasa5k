@@ -1,10 +1,20 @@
-import math
-import numpy as np
-from floortrans.loaders.svg_utils import PolygonWall, get_polygon, calc_distance, get_room_number, get_icon, get_icon_number, get_points, get_direction, get_gaussian2D
 from xml.dom import minidom
-from skimage.draw import polygon
-import cv2
 
+import cv2
+import numpy as np
+from skimage.draw import polygon
+
+from floortrans.loaders.svg_utils import (
+    PolygonWall,
+    calc_distance,
+    get_direction,
+    get_gaussian2D,
+    get_icon,
+    get_icon_number,
+    get_points,
+    get_polygon,
+    get_room_number,
+)
 
 all_rooms = {"Background": 0,  # Not in data. The default outside label
              "Alcove": 1,
@@ -540,7 +550,7 @@ class House:
 
                         rr_mean = int(round(np.mean(rr)))
                         cc_mean = int(round(np.mean(cc)))
-                        center_box = [[rr_mean-10, cc_mean-10], [rr_mean+10, cc_mean+10]]
+                        center_box = [[rr_mean - 10, cc_mean - 10], [rr_mean + 10, cc_mean + 10]]
                         room_name = e.getAttribute('class').replace('Space ', '').split(' ')[0]
                         room_name = room_name_map[room_name]
                         self.representation['labels'].append([center_box, [room_name, 1, 1]])
@@ -614,7 +624,7 @@ class House:
             y = int(np.round(cord[1]))
             channel = self.get_number(p_type)
             if y < self.height and x < self.width:
-                heatmaps[channel-1] = heatmaps[channel-1] + [(x, y)]
+                heatmaps[channel - 1] = heatmaps[channel - 1] + [(x, y)]
 
         channel = 13
         for i in self.opening_corners['left']:
@@ -676,7 +686,7 @@ class House:
             y = int(np.round(cord[1]))
             channel = self.get_number(p_type)
             if y < self.height and x < self.width:
-                heatmaps[channel-1, y, x] = 1
+                heatmaps[channel - 1, y, x] = 1
 
         channel = 13
         for i in self.opening_corners['left']:

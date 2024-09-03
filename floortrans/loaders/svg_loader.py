@@ -1,10 +1,12 @@
-import lmdb
 import pickle
-import torch
-from torch.utils.data import Dataset
+
 import cv2
+import lmdb
 import numpy as np
+import torch
 from numpy import genfromtxt
+from torch.utils.data import Dataset
+
 from floortrans.loaders.house import House
 
 
@@ -24,7 +26,7 @@ class FloorplanSVG(Dataset):
         if format == 'txt':
             self.get_data = self.get_txt
         if format == 'lmdb':
-            self.lmdb = lmdb.open(data_folder+lmdb_folder, readonly=True,
+            self.lmdb = lmdb.open(data_folder + lmdb_folder, readonly=True,
                                   max_readers=8, lock=False,
                                   readahead=True, meminit=False)
             self.get_data = self.get_lmdb
@@ -75,7 +77,7 @@ class FloorplanSVG(Dataset):
             coef_height = float(height_org) / float(height)
             coef_width = float(width_org) / float(width)
             for key, value in heatmaps.items():
-                heatmaps[key] = [(int(round(x*coef_width)), int(round(y*coef_height))) for x, y in value]
+                heatmaps[key] = [(int(round(x * coef_width)), int(round(y * coef_height))) for x, y in value]
 
         img = torch.tensor(fplan.astype(np.float32))
 

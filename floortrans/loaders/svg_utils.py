@@ -1,9 +1,10 @@
 import math
-import numpy as np
+from logging import warning
 from xml.dom import minidom
+
+import numpy as np
 from skimage.draw import polygon
 from svgpathtools import parse_path
-from logging import warning
 
 
 def get_labels(path, height, width):
@@ -157,8 +158,8 @@ def get_corners(g):
             y_all = np.append(y_all, y)
             w = float(pol.getAttribute('width'))
             h = float(pol.getAttribute('height'))
-            x_all = np.append(x_all, x+w)
-            y_all = np.append(y_all, y+h)
+            x_all = np.append(x_all, x + w)
+            y_all = np.append(y_all, y + h)
 
     return x_all, y_all
 
@@ -516,7 +517,7 @@ class PolygonWall(Wall):
         self.id = id
         self.name = e.getAttribute('id')
         self.X, self.Y = self.get_points(e)
-        if abs(max(self.X)-min(self.X)) < 4 or abs(max(self.Y)-min(self.Y)) < 4:
+        if abs(max(self.X) - min(self.X)) < 4 or abs(max(self.Y) - min(self.Y)) < 4:
             # wall is too small and we ignore it.
             raise ValueError("small wall")
         if shape:
@@ -562,7 +563,7 @@ class PolygonWall(Wall):
     def get_width(self, X, Y, direction):
         _, _, p1, p2 = self._get_min_points(X, Y)
 
-        if direction is 'H':
+        if direction == 'H':
             return (abs(p1[0][1] - p1[1][1]) + abs(p2[0][1] - p2[1][1])) / 2
         elif 'V':
             return (abs(p1[0][0] - p1[1][0]) + abs(p2[0][0] - p2[1][0])) / 2
@@ -634,7 +635,7 @@ class PolygonWall(Wall):
             return None
 
     def _get_min_points(self, X, Y):
-        assert len(X) is 4 and len(Y) is 4
+        assert len(X) == 4 and len(Y) == 4
         length = len(X)
         min_dist1 = np.inf
         min_dist2 = np.inf

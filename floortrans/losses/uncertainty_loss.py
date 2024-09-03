@@ -1,7 +1,7 @@
-import torch
-from torch.nn import Parameter, Module
-from torch.nn.functional import mse_loss, cross_entropy, interpolate
 import pandas as pd
+import torch
+from torch.nn import Module, Parameter
+from torch.nn.functional import cross_entropy, interpolate, mse_loss
 
 
 class UncertaintyLoss(Module):
@@ -47,8 +47,8 @@ class UncertaintyLoss(Module):
             rooms_target = rooms_target.type(torch.LongTensor) - self.sub
             icons_target = icons_target.type(torch.LongTensor) - self.sub
 
-        self.loss_rooms_var = cross_entropy(input=rooms_pred*torch.exp(-self.log_vars[0]), target=rooms_target)
-        self.loss_icons_var = cross_entropy(input=icons_pred*torch.exp(-self.log_vars[1]), target=icons_target)
+        self.loss_rooms_var = cross_entropy(input=rooms_pred * torch.exp(-self.log_vars[0]), target=rooms_target)
+        self.loss_icons_var = cross_entropy(input=icons_pred * torch.exp(-self.log_vars[1]), target=icons_target)
 
         self.loss_rooms = cross_entropy(input=rooms_pred, target=rooms_target)
         self.loss_icons = cross_entropy(input=icons_pred, target=icons_target)
@@ -83,7 +83,7 @@ class UncertaintyLoss(Module):
 
         # apply uncertainty magic
         # w_mse_loss = torch.exp(-logvars) * mse_loss_per_tasks + logvars
-        w_mse_loss = torch.exp(-logvars) * mse_loss_per_tasks + torch.log(1+torch.exp(logvars))
+        w_mse_loss = torch.exp(-logvars) * mse_loss_per_tasks + torch.log(1 + torch.exp(logvars))
 
         # take sum and return it
         w_mse_loss_total = w_mse_loss.sum()

@@ -2,12 +2,13 @@
 # https://github.com/wkentaro/pytorch-fcn/blob/master/torchfcn/utils.py
 # https://github.com/meetshah1995/pytorch-semseg/blob/master/ptsemseg/metrics.py
 
-from copy import deepcopy
-import numpy as np
 import math
+
+import numpy as np
 import torch
-from torch.nn.functional import sigmoid, softmax, interpolate
 from skimage import draw
+from torch.nn.functional import interpolate, softmax
+
 from floortrans import post_prosessing
 from floortrans.loaders.augmentations import RotateNTurns
 from floortrans.plotting import shp_mask
@@ -97,7 +98,7 @@ def get_px_acc(pred, target, input_slice, sub=1):
     rooms_target = target[input_slice[0]].type(torch.cuda.LongTensor) - sub
     rooms_pos = torch.eq(rooms_pred, rooms_target).sum()
 
-    icons_target = target[input_slice[0]+1].type(torch.cuda.LongTensor) - sub
+    icons_target = target[input_slice[0] + 1].type(torch.cuda.LongTensor) - sub
     icons_pred = softmax(icons_pred, 0).argmax(0)
     icons_pos = torch.eq(icons_pred, icons_target).sum()
 

@@ -1,14 +1,14 @@
-import numpy as np
-from tensorboardX import SummaryWriter
-import logging
 import argparse
-import torch
+import logging
 from datetime import datetime
-from torch.utils import data
-from floortrans.models import get_model
+
+import torch
 from floortrans.loaders import FloorplanSVG
-from floortrans.loaders.augmentations import DictToTensor, Compose
+from floortrans.loaders.augmentations import Compose, DictToTensor
 from floortrans.metrics import get_evaluation_tensors, runningScore
+from floortrans.models import get_model
+from tensorboardX import SummaryWriter
+from torch.utils import data
 from tqdm import tqdm
 
 room_cls = ["Background", "Outdoor", "Wall", "Kitchen", "Living Room", "Bedroom", "Bath", "Hallway", "Railing", "Storage", "Garage", "Other rooms"]
@@ -100,7 +100,7 @@ if __name__ == '__main__':
     writer = SummaryWriter(log_dir)
     logger = logging.getLogger('eval')
     logger.setLevel(logging.DEBUG)
-    fh = logging.FileHandler(log_dir+'/eval.log')
+    fh = logging.FileHandler(log_dir + '/eval.log')
     fh.setLevel(logging.DEBUG)
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     fh.setFormatter(formatter)

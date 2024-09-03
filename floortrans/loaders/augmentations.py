@@ -1,9 +1,11 @@
-import torch
 import random
-import numpy as np
 from math import inf
-from floortrans.loaders import svg_utils
+
 import cv2
+import numpy as np
+import torch
+
+from floortrans.loaders import svg_utils
 
 
 class Compose(object):
@@ -103,7 +105,7 @@ class RandomRotations(object):
                 new_junction_type = hmapp_convert_map[junction_type]
                 new_heatmap_points = []
                 for point in points:
-                    new_heatmap_points.append([fplan.shape[1]-1-point[1], point[0]])
+                    new_heatmap_points.append([fplan.shape[1] - 1 - point[1], point[0]])
 
                 points_rotated[new_junction_type] = new_heatmap_points
 
@@ -126,7 +128,7 @@ def clip_heatmaps(heatmaps, minx, maxx, miny, maxy):
     for key, value in heatmaps.items():
         res[key] = list(filter(clip, value))
         for i, e in enumerate(res[key]):
-            res[key][i] = (e[0]-minx, e[1]-miny)
+            res[key][i] = (e[0] - minx, e[1] - miny)
 
     return res
 
@@ -157,7 +159,7 @@ class DictToTensor(object):
                 heatmap_tensor[int(channel), int(y), int(x)] = 1
 
         # Gaussian filter
-        kernel = svg_utils.get_gaussian2D(int(30*scale))
+        kernel = svg_utils.get_gaussian2D(int(30 * scale))
         for i, h in enumerate(heatmap_tensor):
             heatmap_tensor[i] = cv2.filter2D(h, -1, kernel)
 
@@ -333,15 +335,15 @@ class RandomCropToSizeTorch(object):
         new_h = self.height + max(img_h, self.height)
 
         new_image = torch.zeros([image.shape[0], new_h, new_w], dtype=self.dtype)
-        new_image[:, pad_h:img_h+pad_h, pad_w:img_w+pad_w] = image
+        new_image[:, pad_h:img_h + pad_h, pad_w:img_w + pad_w] = image
 
         new_heatmaps = torch.zeros([self.input_slice[0], new_h, new_w], dtype=self.dtype)
-        new_heatmaps[:, pad_h:img_h+pad_h, pad_w:img_w+pad_w] = label[:self.input_slice[0]]
+        new_heatmaps[:, pad_h:img_h + pad_h, pad_w:img_w + pad_w] = label[:self.input_slice[0]]
 
         new_rooms = torch.full((self.input_slice[1], new_h, new_w), self.fill[0])
-        new_rooms[:, pad_h:img_h+pad_h, pad_w:img_w+pad_w] = label[self.input_slice[0]]
+        new_rooms[:, pad_h:img_h + pad_h, pad_w:img_w + pad_w] = label[self.input_slice[0]]
         new_icons = torch.full((self.input_slice[2], new_h, new_w), self.fill[1])
-        new_icons[:, pad_h:img_h+pad_h, pad_w:img_w+pad_w] = label[self.input_slice[0]+self.input_slice[1]]
+        new_icons[:, pad_h:img_h + pad_h, pad_w:img_w + pad_w] = label[self.input_slice[0] + self.input_slice[1]]
 
         label = torch.cat((new_heatmaps, new_rooms, new_icons), 0)
         image = new_image
@@ -379,12 +381,12 @@ class RandomCropToSizeTorch(object):
         new_h = self.height + img_h
 
         new_image = torch.full([image.shape[0], new_h, new_w], 255)
-        new_image[:, pad_h:img_h+pad_h, pad_w:img_w+pad_w] = image
+        new_image[:, pad_h:img_h + pad_h, pad_w:img_w + pad_w] = image
 
         new_rooms = torch.full((1, new_h, new_w), self.fill[0])
-        new_rooms[:, pad_h:img_h+pad_h, pad_w:img_w+pad_w] = label[0]
+        new_rooms[:, pad_h:img_h + pad_h, pad_w:img_w + pad_w] = label[0]
         new_icons = torch.full((1, new_h, new_w), self.fill[1])
-        new_icons[:, pad_h:img_h+pad_h, pad_w:img_w+pad_w] = label[1]
+        new_icons[:, pad_h:img_h + pad_h, pad_w:img_w + pad_w] = label[1]
 
         label = torch.cat((new_rooms, new_icons), 0)
         image = new_image
@@ -399,7 +401,7 @@ class RandomCropToSizeTorch(object):
         for junction_type, points in heatmap_points.items():
             new_heatmap_points_per_type = []
             for point in points:
-                new_heatmap_points_per_type.append([point[0]+pad_w, point[1]+pad_h])
+                new_heatmap_points_per_type.append([point[0] + pad_w, point[1] + pad_h])
 
                 new_heatmap_points[junction_type] = new_heatmap_points_per_type
 
@@ -412,15 +414,15 @@ class RandomCropToSizeTorch(object):
         elif removed_down == 0:
             image = image[:, removed_up:, removed_left:-removed_right]
             label = label[:, removed_up:, removed_left:-removed_right]
-            heatmap_points = clip_heatmaps(heatmap_points, removed_left, removed_left+self.width, removed_up, inf)
+            heatmap_points = clip_heatmaps(heatmap_points, removed_left, removed_left + self.width, removed_up, inf)
         elif removed_right == 0:
             image = image[:, removed_up:-removed_down, removed_left:]
             label = label[:, removed_up:-removed_down, removed_left:]
-            heatmap_points = clip_heatmaps(heatmap_points, removed_left, inf, removed_up, removed_up+self.width)
+            heatmap_points = clip_heatmaps(heatmap_points, removed_left, inf, removed_up, removed_up + self.width)
         else:
             image = image[:, removed_up:-removed_down, removed_left:-removed_right]
             label = label[:, removed_up:-removed_down, removed_left:-removed_right]
-            heatmap_points = clip_heatmaps(heatmap_points, removed_left, removed_left+self.width, removed_up, removed_up+self.height)
+            heatmap_points = clip_heatmaps(heatmap_points, removed_left, removed_left + self.width, removed_up, removed_up + self.height)
 
         return {'image': image, 'label': label, 'heatmaps': heatmap_points, 'scale': sample['scale']}
 
@@ -437,12 +439,12 @@ class RandomCropToSizeTorch(object):
         new_h = self.height + img_h
 
         new_image = torch.full([image.shape[0], new_h, new_w], 255)
-        new_image[:, pad_h:img_h+pad_h, pad_w:img_w+pad_w] = image
+        new_image[:, pad_h:img_h + pad_h, pad_w:img_w + pad_w] = image
 
         new_rooms = torch.full((1, new_h, new_w), self.fill[0])
-        new_rooms[:, pad_h:img_h+pad_h, pad_w:img_w+pad_w] = label[0]
+        new_rooms[:, pad_h:img_h + pad_h, pad_w:img_w + pad_w] = label[0]
         new_icons = torch.full((1, new_h, new_w), self.fill[1])
-        new_icons[:, pad_h:img_h+pad_h, pad_w:img_w+pad_w] = label[1]
+        new_icons[:, pad_h:img_h + pad_h, pad_w:img_w + pad_w] = label[1]
 
         label = torch.cat((new_rooms, new_icons), 0)
         image = new_image
@@ -457,7 +459,7 @@ class RandomCropToSizeTorch(object):
         for junction_type, points in heatmap_points.items():
             new_heatmap_points_per_type = []
             for point in points:
-                new_heatmap_points_per_type.append([point[0]+pad_w, point[1]+pad_h])
+                new_heatmap_points_per_type.append([point[0] + pad_w, point[1] + pad_h])
 
                 new_heatmap_points[junction_type] = new_heatmap_points_per_type
 
@@ -470,15 +472,15 @@ class RandomCropToSizeTorch(object):
         elif removed_down == 0:
             image = image[:, removed_up:, removed_left:-removed_right]
             label = label[:, removed_up:, removed_left:-removed_right]
-            heatmap_points = clip_heatmaps(heatmap_points, removed_left, removed_left+self.width, removed_up, inf)
+            heatmap_points = clip_heatmaps(heatmap_points, removed_left, removed_left + self.width, removed_up, inf)
         elif removed_right == 0:
             image = image[:, removed_up:-removed_down, removed_left:]
             label = label[:, removed_up:-removed_down, removed_left:]
-            heatmap_points = clip_heatmaps(heatmap_points, removed_left, inf, removed_up, removed_up+self.width)
+            heatmap_points = clip_heatmaps(heatmap_points, removed_left, inf, removed_up, removed_up + self.width)
         else:
             image = image[:, removed_up:-removed_down, removed_left:-removed_right]
             label = label[:, removed_up:-removed_down, removed_left:-removed_right]
-            heatmap_points = clip_heatmaps(heatmap_points, removed_left, removed_left+self.width, removed_up, removed_up+self.height)
+            heatmap_points = clip_heatmaps(heatmap_points, removed_left, removed_left + self.width, removed_up, removed_up + self.height)
 
         return {'image': image, 'label': label, 'heatmap_points': heatmap_points}
 
@@ -543,7 +545,7 @@ class ColorJitterTorch(object):
 
 class ResizePaddedTorch(object):
 
-    def __init__(self, fill, size=(256, 256),  both=True, dtype=torch.float32, data_format='tensor'):
+    def __init__(self, fill, size=(256, 256), both=True, dtype=torch.float32, data_format='tensor'):
         self.size = size
         self.width = size[0]
         self.height = size[1]
@@ -647,6 +649,6 @@ class ResizePaddedTorch(object):
         x_pad = int((self.width - interm_img.shape[1]) / 2)
         y_pad = int((self.height - interm_img.shape[2]) / 2)
 
-        new_img[:, x_pad:interm_img.shape[1]+x_pad, y_pad:interm_img.shape[2]+y_pad] = interm_img
+        new_img[:, x_pad:interm_img.shape[1] + x_pad, y_pad:interm_img.shape[2] + y_pad] = interm_img
 
         return new_img, ratio, x_pad, y_pad

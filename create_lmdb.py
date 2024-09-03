@@ -1,12 +1,13 @@
-import lmdb
-import os
-import pickle
 import argparse
 import logging
-import numpy as np
+import os
+import pickle
 from datetime import datetime
-from tqdm import tqdm
+
+import lmdb
+import numpy as np
 from floortrans.loaders.svg_loader import FloorplanSVG
+from tqdm import tqdm
 
 
 def main(args, logger):
@@ -58,7 +59,7 @@ if __name__ == '__main__':
         os.makedirs(log_dir)
     logger = logging.getLogger('lmdb')
     logger.setLevel(logging.DEBUG)
-    fh = logging.FileHandler(log_dir+'/lmdb.log')
+    fh = logging.FileHandler(log_dir + '/lmdb.log')
     fh.setLevel(logging.DEBUG)
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     fh.setFormatter(formatter)
