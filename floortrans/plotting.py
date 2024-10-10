@@ -919,11 +919,11 @@ def segmentation_plot(rooms_pred, icons_pred, rooms_label, icons_label):
 
 
 def polygons_to_image(polygons, types, room_polygons, room_types, height, width):
-    pol_room_seg = np.zeros((height, width))
-    pol_icon_seg = np.zeros((height, width))
+    pol_room_seg = np.zeros((height + 1, width + 1))
+    pol_icon_seg = np.zeros((height + 1, width + 1))
 
     for i, pol in enumerate(room_polygons):
-        mask = shp_mask(pol, np.arange(width), np.arange(height))
+        mask = shp_mask(pol, np.arange(width + 1), np.arange(height + 1))
 
         #         jj, ii = draw.polygon(pol[:, 1], pol[:, 0])
         pol_room_seg[mask] = room_types[i]["class"]
